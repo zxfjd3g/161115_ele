@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ele-header></ele-header>
+    <ele-header :seller="seller"></ele-header>
 
     <div class="tab">
       <div class="tab-item">
@@ -21,16 +21,27 @@
 <script>
   import header from './components/header/header.vue'
   export default {
+    data () {
+      return {
+        seller: {}
+      }
+    },
 
     created () {
-      this.$http.get('/test')
+      /*this.$http.get('/test')
         .then(response => {
           console.log(response.body)
-        })
-      this.$http.get('/api2/seller')
-        .then(response => {
-          console.log(response.body)
-        })
+        })*/
+      setTimeout(() => {
+        this.$http.get('/api2/seller')
+          .then(response => {
+            console.log(response.body)
+            const result = response.body
+            if(result.code===0) {
+              this.seller = result.data
+            }
+          })
+      }, 500)
     },
     components: {
       'ele-header': header
