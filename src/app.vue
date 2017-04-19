@@ -39,6 +39,7 @@
             const result = response.body
             if(result.code===0) {
               this.seller = result.data
+              this.seller.score = 3.6
             }
           })
       }, 500)
@@ -62,7 +63,9 @@
       text-align center
       font-size 14px
       color rgb(77,85,93)
-      .v-link-active
-        color rgb(240,20,20)
+      a
+        display: block
+        &.v-link-active
+          color rgb(240,20,20)
 
 </style>
