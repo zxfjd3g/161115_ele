@@ -1,6 +1,6 @@
 <template>
   <div class="goods">
-    <div class="menu-wrapper">
+    <div class="menu-wrapper" v-el:menu-wrapper>
       <ul>
         <!--current-->
         <li class="menu-item" v-for="good in goods">
@@ -10,7 +10,7 @@
         </li>
       </ul>
     </div>
-    <div class="foods-wrapper">
+    <div class="foods-wrapper" v-el:foods-wrapper>
       <ul>
         <li class="food-list food-list-hook" v-for="good in goods">
           <h1 class="title">{{good.name}}</h1>
@@ -45,6 +45,8 @@
 </template>
 
 <script>
+  import BScroll from 'better-scroll'
+
   export default {
     data () {
       return {
@@ -53,6 +55,7 @@
     },
 
     created () {
+
       this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee']
       this.$http.get('/api2/goods')
         .then(response => {
@@ -60,8 +63,24 @@
           const result = response.body
           if(result.code===0) {
             this.goods = result.data
+            // 将回调延迟到下次 DOM 更新循环之后执行
+            this.$nextTick(() => {
+              this._initScroll()
+            })
           }
         })
+    },
+
+    methods: {
+      _initScroll () {
+        //创建scroller对象
+        new BScroll(this.$els.menuWrapper, {
+
+        })
+        new BScroll(this.$els.foodsWrapper, {
+
+        })
+      }
     }
   }
 </script>
