@@ -32,7 +32,7 @@
                   <span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
                 </div>
                 <div class="cartcontrol-wrapper">
-                  cartcontrol组件
+                  <cartcontrol :food="food"></cartcontrol>
                 </div>
               </div>
             </li>
@@ -40,15 +40,19 @@
         </li>
       </ul>
     </div>
-    <div class="shopcart"></div>
-    <div class="list-mask" transition="fade" v-show="false"></div>
+    <shopcart :foods="selectedFoods" :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
   </div>
 </template>
 
 <script>
+  import Vue from 'vue'
   import BScroll from 'better-scroll'
 
+  import cartcontrol from '../cartcontrol/cartcontrol.vue'
+  import shopcart from '../shopcart/shopcart.vue'
+
   export default {
+    props: ['seller'],
     data () {
       return {
         goods: [],
@@ -122,7 +126,42 @@
         return this.tops.findIndex((top, index) => {
           return this.scrollY>=top && this.scrollY<this.tops[index+1]
         })
+      },
+      selectedFoods () {
+        const foods = []
+        this.goods.forEach(good => {
+          good.foods.forEach(food => {
+            if(food.count) {
+              foods.push(food)
+            }
+          })
+        })
+        return foods
       }
+    },
+
+    events: {
+      cartitem_update ({isAdd, food}) {
+        console.log('cartitem_update()')
+        if(isAdd) {
+          if(food.count) {
+            food.count++
+          } else { //第一次加
+            // food.count = 1
+            //对添加的新属性进行监视
+            Vue.set(food, 'count', 1)
+          }
+        } else {
+          if(food.count) {
+            food.count--
+          }
+        }
+      }
+    },
+
+    components: {
+      cartcontrol,
+      shopcart
     }
   }
 </script>
