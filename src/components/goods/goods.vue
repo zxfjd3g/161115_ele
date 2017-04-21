@@ -3,7 +3,8 @@
     <div class="menu-wrapper" v-el:menu-wrapper>
       <ul>
         <!--current-->
-        <li class="menu-item" v-for="good in goods">
+        <li class="menu-item" v-for="good in goods" :class="{current: $index===currentIndex}"
+          @click="clickMenuItem($index, $event)">
           <span class="text border-1px">
             <span class="icon" v-if="good.type>=0" :class="classMap[good.type]"></span>{{good.name}}
           </span>
@@ -51,6 +52,8 @@
     data () {
       return {
         goods: [],
+        scrollY: 0,
+        tops: []
       }
     },
 
@@ -61,13 +64,14 @@
         .then(response => {
           console.log(response.body)
           const result = response.body
-          if(result.code===0) {
-            this.goods = result.data
-            // 将回调延迟到下次 DOM 更新循环之后执行
-            this.$nextTick(() => {
-              this._initScroll()
-            })
-          }
+          this.goods = result.data
+          // 将回调延迟到下次 DOM 更新循环之后执行
+          this.$nextTick(() => {
+            // 初始化scroll对象
+            this._initScroll()
+            // 初始化所有li的top坐标
+            this._initTops()
+          })
         })
     },
 
@@ -75,10 +79,48 @@
       _initScroll () {
         //创建scroller对象
         new BScroll(this.$els.menuWrapper, {
-
+          click: true
         })
-        new BScroll(this.$els.foodsWrapper, {
+        this.foodsScroll = new BScroll(this.$els.foodsWrapper, {
+          probeType: 3,
+          click: true
+        })
+        this.foodsScroll.on('scroll', (pos) => {
+          // console.log(pos.x, pos.y)
+          this.scrollY = Math.abs(pos.y)
+        })
+      },
 
+      _initTops () {
+        const foodListEles = this.$els.foodsWrapper.getElementsByClassName('food-list-hook')
+        const tops = this.tops
+        tops.push(0)
+        let top = 0
+        for (let i = 0,length=foodListEles.length; i < length; i++) {
+          top += foodListEles[i].clientHeight
+          tops.push(top)
+        }
+        console.log(this.tops)
+      },
+
+      clickMenuItem (index, event) {
+        if(!event._constructed) {//_contructed是better-scroll添加的
+          return
+        }
+        // console.log('clickMenuItem() ', event)
+        //找到目标li
+        const foodListEles = this.$els.foodsWrapper.getElementsByClassName('food-list-hook')
+        let li = foodListEles[index]
+        //滚动li处
+        this.foodsScroll.scrollToElement(li, 300)
+      }
+
+    },
+
+    computed: {
+      currentIndex () {
+        return this.tops.findIndex((top, index) => {
+          return this.scrollY>=top && this.scrollY<this.tops[index+1]
         })
       }
     }
