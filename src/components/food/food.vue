@@ -42,7 +42,8 @@
 
         <div class="rating-wrapper" v-if="food.ratings">
           <ul>
-            <li class="rating-item border-1px" v-for="rating in food.ratings" v-show="needShow(rating.rateType, rating.text)">
+            <li class="rating-item border-1px" v-for="rating in filterRatings"
+                ><!--v-show="needShow(rating.rateType, rating.text)"-->
               <div class="user">
                 <span class="name">{{rating.username}}</span>
                 <img class="avatar" width="12" height="12" :src="rating.avatar">
@@ -122,6 +123,39 @@
         } else {
           return type===selectType
         }
+      }
+    },
+
+    computed: {
+      filterRatings () {
+        //刷新滚动条
+        this.$nextTick(() => {
+          if (!this.scroll) {
+            this.scroll = new BScroll(this.$els.food, {
+              click: true
+            })
+          } else {
+            this.scroll.refresh() //当内容高度形成滚动
+          }
+        })
+        return this.food.ratings.filter(rating => {
+          const onlyContent = this.onlyContent
+          const selectType = this.selectType
+          const text = rating.text
+          const type = rating.rateType
+
+          if(selectType===2 && onlyContent) {
+            return !!text
+          } else if (selectType===2 && !onlyContent) {
+            return true
+          }
+
+          if(onlyContent) {
+            return type===selectType && text
+          } else {
+            return type===selectType
+          }
+        })
       }
     },
 
