@@ -34,10 +34,15 @@
 
       <div class="rating">
         <h1 class="title">商品评价</h1>
-        <div>ratingselect组件</div>
+
+        <ratingselect :desc="desc"
+              :only-content="onlyContent"
+              :ratings="food.ratings"
+              :select-type="selectType"></ratingselect>
+
         <div class="rating-wrapper" v-if="food.ratings">
           <ul>
-            <li class="rating-item border-1px" v-for="rating in food.ratings">
+            <li class="rating-item border-1px" v-for="rating in food.ratings" v-show="needShow(rating.rateType, rating.text)">
               <div class="user">
                 <span class="name">{{rating.username}}</span>
                 <img class="avatar" width="12" height="12" :src="rating.avatar">
@@ -59,41 +64,80 @@
   import BScroll from 'better-scroll'
   import cartcontrol from '../cartcontrol/cartcontrol.vue'
   import split from '../split/split.vue'
+  import ratingselect from '../ratingselect/ratingselect.vue'
 
   export default {
     props: ['food'],
 
     data () {
       return {
-        isShow: false
+        isShow: false,
+        onlyContent: true,
+        selectType: 2
+      }
+    },
+
+    created () {
+      this.desc = {
+        all:"全部",
+        negative:"吐槽",
+        positive:"推荐"
       }
     },
 
     methods: {
       show(isShow) {
         this.isShow = isShow
-        if (isShow) {
-          this.$nextTick(() => {
-            if (!this.scroll) {
-              this.scroll = new BScroll(this.$els.food, {
-                click: true
-              })
-            } else {
-              this.scroll.refresh() //当内容高度形成滚动
-            }
-          })
-        }
       },
 
       addFirst (event) {
         //发增加的消息
         this.$dispatch("cartitem_update", {isAdd: true, food: this.food})
+      },
+
+      needShow (type, text) {
+        //刷新滚动条
+        this.$nextTick(() => {
+          if (!this.scroll) {
+            this.scroll = new BScroll(this.$els.food, {
+              click: true
+            })
+          } else {
+            this.scroll.refresh() //当内容高度形成滚动
+          }
+        })
+
+        const onlyContent = this.onlyContent
+        const selectType = this.selectType
+
+        if(selectType===2 && onlyContent) {
+          return !!text
+        } else if (selectType===2 && !onlyContent) {
+          return true
+        }
+
+
+        if(onlyContent) {
+          return type===selectType && text
+        } else {
+          return type===selectType
+        }
+      }
+    },
+
+    events: {
+      switch_onlyContent () {
+        this.onlyContent = !this.onlyContent
+      },
+      set_selectType (type) {
+        this.selectType = type
       }
     },
 
     components: {
       cartcontrol,
-      split
+      split,
+      ratingselect
     }
   }
 </script>
